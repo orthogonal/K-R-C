@@ -9,6 +9,7 @@ int htoi(char s[]);
 main(){
 	char hexes[] = "ff430F0x";
 	printf("Answer is %ld\n", htoi(hexes));
+	return 0;
 }
 
 int htoi(char s[]) 
