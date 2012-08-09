@@ -1,0 +1,161 @@
+1.1:  Getting Started
+---------------------
+C programs have filenames ending with .c
+To compile a C program, run `cc filename.c` in Terminal.
+This creates an executable file called `a.out`.
+To run the C program, run `./a.out` in Terminal.
+
+#include <...> is used to include the file named `...`.
+The first line of most C programs is 
+	#include <stdio.h>
+	
+Every C program must have a `main` function somewhere.  This is where the program will begin execution.
+	main()
+	{
+		...
+	}
+
+printf("...") is used to output a character string.
+Character strings are specified in "..." quotes.
+They can not be split across multiple lines.
+
+You need a semicolon at the end of each line.
+
+
+1.2:  Variables and Arithmetic Expressions
+------------------------------------------
+Comments are the standard // and /* ... */
+All variables must be declared before they are used:
+	int n;
+The data types in C are: char, short, int, long, float, double.
+
+The syntax for a while loop is
+	while ( ... ) {
+		...
+	}
+If there is only one line, you don't need the brackets.
+
+Insert variables into printf using placeholders:
+	printf("%d", n);
+You can also do %6.1f, which says a floating point must be at least six characters wide, with one digit after the decimal point.
+
+Integer division in C truncates.  5/10 = 0.5, but in C it would truncate to 0 since the result must be an integer.
+To get a floating-point number, try 5.0/9.0.
+
+
+1.3:  The For Statement
+-----------------------
+The syntax for a for loop in C is:
+	for (int i = 0; i <= 5; i++){
+		...
+	}
+
+
+1.4:  Symbolic Constants
+------------------------
+You shouldn't bury meaningful numbers as plain numbers in a program.  Define them early so people know what they're there for.
+The syntax for defining a symbolic constant is:
+	#define name ...
+and they should be in all caps, with no semicolon at the end, i.e.
+	#define MAX 5
+	
+Put them right under #include, so like the 2nd-ish line.
+
+
+1.5:  Character Input and Output
+--------------------------------
+A text stream is a sequence of characters, divided into lines by the '\n' character.
+
+getchar() reads the next input character from a text string each time it is called and returns it.
+putchar(c) prints the character represented by integer variable c.
+
+You will often use
+	while ((c = getchar()) != EOF)
+You type something and then press enter.  
+Once the \n character is out there, getchar() will race through each character in the line you just typed and do something with it (as c).
+EOF is end of file, probably CTRL+D.  When this is typed, the while loop terminates.
+
+++ and -- mean increment and decrement, as usual for programming languages (++n means decrement first, n++ after).
+In printf, %ld specifies a long integer.
+
+A line that is just a semicolon is called a null statement - you use it when everything you want to have happen is done in the statement head.
+
+A character constant is in single quotes, and can be any character, like 'a' or like '\n'.  It's actually an integer.
+
+In expressions, %% is AND and || is OR.
+
+
+1.6:  Arrays
+------------
+An array is declared with the syntax:
+	int n[10]
+You have to give a length.
+
+The syntax for if statements is:
+	if (...){
+		...
+	} else if (...){
+		...
+	} else{
+		...
+	}
+
+
+1.7:  Functions
+---------------
+A function declaration looks like:
+	int power(int base, int n)
+	{
+		...
+	}
+
+When you declare a function, you also have to put the "function prototype" in the top part of the program.  So under #include:
+	int power(int base, int n)
+
+To return a value from a function, use the statement
+	return n;
+You don't have to return anything, you can just write return;
+After a return statement, control immediately returns to the caller.
+
+If a function doesn't return anything, you write
+	void power(int base, int n)
+And instead of a return statement (unless -- you can still have a blank one), it terminates when it reaches the end of the definition.
+
+It turns out that main() should return 0, to imply normal termination to the operating system.
+
+Functions can appear in any source file, as long as you compile all of them.
+
+
+1.8:  Arguments - Call by Value
+-------------------------------
+A called function can not directly alter a variable in the calling function - only its private local copy.
+You can modify the original variable if the caller provides a pointer to the variable, discussed in chapter 5.
+When an array is passed, the value passed is the address of the beginning of the array.
+
+
+1.9:  Character Arrays
+----------------------
+In function headers, arrays are written like
+	int line[]
+And if it returns an array, you don't say so.
+
+Character arrays are basically strings.
+The character '\0' is the "null character" and marks the end of the string.
+
+
+1.10:  External Variables and Scopes
+------------------------------------
+Local variables are called "automatic" variables because they appear when the function is created and disappear when it is exited.
+You can do variables that are external to all functions and can be accessed by name in any function.
+Define an external variable exactly once, at the top of the program.  
+This is in the same place as the #define statements, but you just define them normally, i.e.
+	int n = 5;
+	
+Then to use an external variable, in the function where they are used, you have to write
+	extern int n;
+
+You don't have to do "extern" if the external variable definition appears in the source file before its use in a function.
+It's common practice to place external variables first and then omit the "extern"s.
+In other files, you have to use "extern".
+Usual practice is to put all the extern declarations of variables and functions in a separate file called a "header", ending with .h.
+This header is then included.
