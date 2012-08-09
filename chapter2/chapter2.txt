@@ -1,0 +1,211 @@
+2.1:  Variable Names
+--------------------
+Names are made up of letters, digits, and _.
+The first character must be a letter.
+Traditionally, lower case is used for variable names and upper case is used for symbolic constants.
+
+You can not use int, float, etc. as variable names - they are reserved.
+
+
+2.2:  Data Types and Sizes
+--------------------------
+char	a single byte, capable of holding one character in the local character set.
+int		an integer, typically reflecting the natural size of integers on the host machine.
+float	single-precision floating point.
+double	double-precision floating point.
+
+You can put short or long in front of integers to provide different lengths.
+	short int sh
+You can omit the word "int", which most people do.  Usually short is 16 bits and long is 32 bits.
+More specifically, short is no longer than int, and long is at least 32 bits.
+
+You can put signed or unsigned in front of char or integer.
+	unsigned char c
+	
+long double is extended-precision floating point.  The size is implementation defined.
+
+<limits.h> and <float.h> contain symbolic constants for the sizes of these data types.
+Information on what those are is in appendix B of the book.
+
+
+2.3:  Constants
+---------------
+Long constants are written with L at the end, i.e. 123456789L
+Also, if an integer is too big for an int, it will be taken as a long.
+
+Unsigned constants are written with U at the end.
+To do unsigned long, write UL.
+
+Double is the automatic type for floating-point constants.
+Put F at the end for float or L at the end for long double.
+
+A leading 0 on an integer constant means octal.
+A leading 0x or 0X means hexadecimal.
+
+A character in single quotes is a character constant, an integer.  i.e. 'x'
+Character constants can be escape sequences, octal patterns '\111' or hex patterns starting with x '\xhh'
+
+The escape sequences are:
+\a:  alert (bell)			\b:  backspace			\f:  formfeed		\n:  newline
+\r:  carriage return		\t:  horizontal tab		\v:  vertical tab	\\:  backslash
+\?:  question mark			\':  single quote		\":  double quote	\0:  zero (null character)
+
+A string constant (string literal) is like "hello".
+To concatenate strings:
+	"hello, " "world"
+	
+String functions, such as strlen(s), are defined in <string.h>
+'x' is a character constant
+"x" is a one-character string constant.
+
+An enumeration is a list of constant integer values:
+	enum n {NO, YES};
+The first name has value 0, the next has value 1, etc.
+You can also specify explicit values:
+	enum n {NO = 5, YES = 9}
+Also, if you specify a number, you can leave the rest blank and the values will incrementally increase:
+	enum months {JAN = 1, FEB, MAR}
+FEB will be 2, MAR 3
+
+
+2.4:  Declarations
+------------------
+A declaration specifies a type and contains a list of one or more variables of that type:
+	int lower, upper, step[5];
+	
+A variable can also be initialize in its declaration:
+	int lower = 5;
+If the variable is not automatic, its initialization is done before the program starts executing, and the initializer must be constant.
+External and static variables are initialized to 0 by default.
+Automatic variables have undefined values by default.
+
+const can be put before a declaration to specify that its value will not be changed.
+	const double e = 2.718
+You can use const with array arguments to indicate that the function does not change that array.
+	int strlen(const char[])
+If an attempt is made to change a const, the result is implementation defined.
+
+
+2.5:  Arithmetic Operators
+--------------------------
++, -, *, /, and %
+
+% can not be applied to float or double.
+The direction of truncation for /, and the sign of the result for %, for negative numbers, are machine-dependent.
+
+
+2.6:  Relational and Logical Operators
+--------------------------------------
+>, >=, <, <=, ==, !=.
+|| and && are the logical operators.
+
+Expressions connected by && or || are evaluated from left to right, and evaluation stops as soon as the truth or falsehood is known.
+
+! converts a non-zero operand into 0 and a 0 operand into 1.
+
+
+2.7:  Type Conversions
+----------------------
+When an operator has operands of different types, they are converted to a common type.
+Expressions that don't make sense are disallowed.
+
+chars may be freely used in arithmetic expressions since they are basically just small integers.
+
+<ctype.h> defines a family of functions that provide tests and conversions that are independent of character set.
+Include it in files from now on.  The functions in it are defined in Appendix B in the book.
+
+For portability, you should specify signed or unsigned if non-character data is to be stored in char variables.
+
+Expressions have value 1 if true and 0 if false.
+
+In the test part of if, while, for, etc., any non-zero value means "true".
+
+If there are no unsigned operands, the following informal set of rules for conversion suffice:
+	If either operand is long double, convert the other to long double.
+	Otherwise, if either operand is double, convert the other to double.
+	Otherwise, if either operand is float, convert the other to float.
+	Otherwise, convert char and short to int.
+	Then, if either operand is long, convert the other to long.
+	
+In general, mathematical functions use double precision.
+
+Longer integers are converted to shorter ones by dropping the excess high-order bits.
+Floats are converted to integers by truncating the fractional part.
+Doubles are converted to floats by either rounding or truncating, depending on the implementation.
+
+Type conversions take place when arguments are passed to functions.
+
+Explicit type conversions can be coerced (forced) by casting:
+	(type) expression
+i.e.
+	n = (int) 5.2
+
+
+2.8:  Increment and Decrement Operators
+---------------------------------------
+++ and -- can prefix (++n) or postfix (n++).  
+They both increment/decrement, but with prefix, the in/decrementing is done before its value is used.
+
+
+2.9:  Bitwise Operators
+-----------------------
+There are six operators for bit manipulation.
+They can be applied to char, short, int, and long, signed or unsigned.
+	&		bitwise AND
+	|		bitwise OR
+	^		bitwise XOR
+	<<		left shift
+	>>		right shift
+	~		one's complement
+	
+An example given in the book is n = n & 0177
+The 0177 is octal for 01111111, so this would be setting all but the last 7 bits to 0.
+
+1 << 5 would give 00....0100000 (five zeroes and then a 1).  That's used a lot.
+~0 is 11111...111.  That is also used a lot.
+
+For <<, the vacated bits are filled in with 0s.
+For >> on a signed quantity, either sign bits or 0 bits may be shifted in (arithmetic vs. logical shift) depending on the machine.
+
+
+2.10:  Assignment Operators and Expressions
+-------------------------------------------
++, -, *, /, %, <<, >>, &, ^, | 
+All of those can have an = appended to them to create an assignment operator.
+i.e. n += 5 is the same as n = n + 5.
+The type of the result is the type of the left operand.
+
+
+2.11:  Conditional Expressions
+------------------------------
+The conditional expression is written with the ternary operator ?:
+	z = (a > b) ? a : b
+is the same as
+	if (a > b)
+		z  = a;
+	else
+		z = b;
+		
+
+2.12:  Precedence and Order of Evaluation
+-----------------------------------------
+() [] -> .
+! + - ++ -- * & (cast) sizeof
+* / %
++ -
+<< >>
+< <= > >=
+== !=
+&
+^
+|
+&&
+||
+?:
+= += -= *= /= %= &= ^= |= <<= >>=
+,
+
+Unary +, -, * have higher precedence than binary.
+
+All but ?:, the second row, and the second to last row are left-to-right; those rows are right-to-left.
+Writing code that depends on order of evaluation is a bad programming practice in any language.
