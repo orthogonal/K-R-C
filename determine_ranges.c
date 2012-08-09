@@ -25,4 +25,5 @@ main()
 	}
 	printf("Signed int: %d - %d\n", (j * -2), (j + (j - 1)));
 	//The others are similar but tedious and not interesting to discover.
+	return 0;
 }
