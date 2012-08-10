@@ -1,0 +1,91 @@
+3.1:  Statements and Blocks
+---------------------------
+When an expression is followed by a semicolon, it becomes a statement.
+Braces are used to group statements together into a block (compound statement).
+There is no semicolon after a block.
+
+
+3.2:  If-Else
+-------------
+The syntax for if-else is:
+	if (expression){
+		...
+	} else {
+		...
+	}
+An else will be associated with the closest previous else-less if.
+If you don't want this to happen, you have to be explicit about it with brackets.
+
+
+3.3:  Else-If
+-------------
+You write "else if" for else-if.  
+
+
+3.4:  Switch
+------------
+The syntax for a switch statement is:
+	switch (expression){
+		case constant:  statements
+			break;
+		case constant: statements
+			break;
+		default: statements
+			break;
+	}
+	
+Default is executed if none of the other cases are satisfied - it's optional.
+Break causes an immediate exit from the switch.  The cases are just labels, and execution falls through if you don't use break.
+Put break after the last case, even though it's unnecessary - it will save you from a potential problem later if you add more cases.
+
+
+3.5:  Loops - While and For
+---------------------------
+In a while loop, the expression is evaluated and, if it is non-zero, the statement is executed, repeat.
+The cycle continues until expression becomes zero.
+The for statement is equivalent to a while loop except for the behavior of continue.
+
+	for (;;){
+		...
+	}
+is an infinite loop.
+Any of the three parts of the for loop can be omitted.
+
+A pair of expressions separated by a comma is evaluated left to right.
+It is most commonly used in the for statement, to do multiple initializations or whatever.  For example:
+	for (i = 0, j = 5; i < j; i++, j--)
+	
+Commas should be used sparingly, and they are best when they strongly relate to each other.
+
+
+3.6:  Loops - Do-While
+----------------------
+The do-while loop tests at the bottom after making each pass through the loop body.
+The syntax is:
+	do
+		...
+	while (expression);
+	
+
+3.7:  Break and Continue
+------------------------
+The break statement provides an early exit from for/while/do loops, just as from switch.
+It causes the innermost enclosing loop or switch to be exited immediately.
+
+The continue statement causes the next iteration of the enclosing for/while/do loop to begin.
+In while/do, the test part is executed immediately.
+In for, the increment step is done first.
+
+
+3.8:  Goto and Labels
+---------------------
+The syntax for goto is:
+	goto labelname
+And then for a label you just write
+	labelname:
+As the first thing on the line.
+The scope of a label is the entire function.
+
+Code involving a goto can always be written without one.
+Code that relies on goto statements is generally harder to understand and maintain.
+They are sometimes used, however, to abandon processing in some deeply nested structure.
