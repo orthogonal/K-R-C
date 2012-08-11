@@ -1,0 +1,191 @@
+4.1:  Basics of Functions
+-------------------------
+The syntax for declaring a function is:
+	return-type  function-name(argument declarations)
+	{
+		...
+	}
+Various parts may be absent.  
+If the return-type is omitted, int is assumed.
+
+A return statement returns a value from the function to its called:
+	return expression;
+You can also just write return to immediately go back to the caller without returning a value.
+Control will also return to the caller after the function falls off its ending brace.
+
+Compiling and loading C programs involves multiple source files.
+	cc file1.c file2.c file3.c
+This compiles the three files into object code files file1.o, file2.o, file3.o
+It then loads them all into an executable file, a.out.
+
+.c is a source file
+.o is an object file
+
+If you fix just one of the files, you can do like
+	cc file1.c file2.o file3.o
+To re-do making the executable file a.out, but only have to re-compile one.
+
+
+4.2:  Functions Returning Non-Integers
+--------------------------------------
+You declare the type of the function in the header and in the actual definition.
+	double sum(double x, double y)
+	
+If a function declaration does not include arguments
+	double atof()
+That is taken to mean that nothing is to be assumed about the arguments.
+This is mainly there to keep older C programs compatible with new compilers and it's a bad idea to use it.
+If a function takes no arguments, you should declare it with
+	double atof(void)
+	
+The value of an expression in a return statement is converted automatically to the type of the function before it is taken.
+Compilers may warn about this, so you can use casting to make it explicit.
+
+
+4.3:  External Variables
+------------------------
+"Internal" describes the arguments and variables defined inside functions.
+"External" means the variables defined outside of any function, and thus available to many functions.
+
+Functions are always external.
+Functions can not be defined inside other functions.
+
+External variables have the property that all references to them by the same name, even from functions compiled separately, are references to the same thing.
+This property is known as "external linkage".
+
+
+4.4:  Scope Rules
+-----------------
+The source text of a program can be kept among several files.
+The scope of a name is the part of the program within which the name can be used.
+Local variables of the same name in different functions are unrelated.
+
+The scope of an external variable or function lasts from the point at which it is declared until the end of the file being compiled.
+If an external variable is defined before it is used, you can refer to it by name.
+If it is to be referred to before it is defined, or if it is defined in a different source file, an extern declaration is mandatory.
+
+A declaration announces the properties of a variable, primarily its type.
+A definition actually causes storage to be set aside.
+
+If a line like
+	int sp;
+appears outside of a function, it's a definition of the external variable, declaring it and causing storage to be set aside.
+The line
+	extern int sp;
+Declares for the rest of the source file that sp is an int.
+
+The must be only one definition of an external variable among all the files that make up the source program.
+Array sizes must be specified within the definition, but are optional in declarations.
+Initialization of an external variable goes only with the definition.
+
+
+4.5:  Header Files
+------------------
+Definitions and declarations shared among files should be centralized, so we can keep it right as the program evolves.
+We call this a header file, ending with .h
+It looks like:
+	#define ...
+	void push(double);
+No brackets or anything.
+
+Up to some moderate program size, it is probably best to have one header file that contains everything that is to be shared.
+For a much larger program, more organization and more headers would be needed.
+
+
+4.6:  Static Variables
+----------------------
+The static declaration, applied to an external variable or function, limits its scope to the rest of the source file being compiled.
+	static char buf
+	
+No other routine will be able to access it
+The names will not conflict with the same names in other files in the same program.
+
+Static declarations can also be applied to internal variables.
+In this case, they remain in existence rather than coming and going each time the function is activated.
+This means that they provide private, permanent storage within a single function.
+
+
+4.7:  Register Variables
+------------------------
+A register declaration advises the compiler that the variable in question will be heavily used.
+The compiler will, if possible, place it in a machine register, to make a smaller and faster program.
+Compilers may ignore the advice and may only put a certain limited amount of variables in the register.
+Excess register declarations will just be ignored.
+
+
+4.8:  Block Structure
+---------------------
+Declarations of variables inside any block (not just a function) remain in existence only until the end of the block.
+They also hide identically named variables outside the block.
+
+
+4.9:  Initialization
+--------------------
+In the absence of explicit initialization, external and static variables are guaranteed to be initialized to zero.
+Automatic and register variables have undefined initial values.
+
+You can initialize variables when they are defined:
+	int x = 1;
+For external and static variables, this must be a constant expression, and the initialization is done before the program executes.
+For automatic and register variables, this can be an expression involving previously defined values.
+
+An array may be initialized by following its declaration with a comma-separated list of initializers inside braces:
+	int days[] = {31, 28, 31, 30}
+When the size of the array is omitted, the compiler calculates it by counting the initializers.
+If you specify a size greater than the number of initializers, the rest is filled in with zeroes.
+
+
+4.10:  Recursion
+----------------
+You can do recursion in C.
+
+
+4.11:  The C Preprocessor
+-------------------------
+Pre-processing is conceptually a separate first step in compilation.
+
+Any source line of the form
+	#include "filename"
+or
+	#include <filename>
+is replaced by the contents of that file.
+If it's in quotes, searching for the file begins where the source program was found.
+If it isn't found, or if it's in <>, searching follows an implementation-defined rule to find the file.
+
+A definition has the form
+	#define name replacement-text
+It calls for a macro substitution.
+This is where every occurrence of the token will be replaced by the replacement text, which can be anything.
+The scope of this definition is from its point of definition to the end of the source file being compiled.
+	#define forever for(;;)
+	
+You can declare macros with arguments, so the replacement text can be different for different calls:
+	#define max(A, B) ((A) > (B))
+The arguments are replaced exactly textually.
+
+You can use #undef to undefine a name
+	#undef getchar
+	
+Formal parameters are not replaced within quoted strings.  
+However, if you put # before a parameter name in the replacement text, it will be expanded into a quoted string with the parameter replaced by the argument.
+	#define dprint(expr) printf(#expr " = 5")
+becomes
+	dprint(7) would be printf("7 " " = 5")
+
+## provides a way to concatenate actual arguments.
+If a parameter in the replacement text is adjacent to ##, it is replaced by the argument, and the white space and ## are removed.
+	#define paste(a, b) a ## b
+becomes
+	paste(hello, goodbye) would be hellogoodbye
+
+There are conditional statements that are evaluated during preprocessing:
+	#if		#elif	#else	#endif
+elif is else if.  endif goes at the end.
+	#if SYSTEM == SYSV
+		#define HDR "sysv.h"
+	#elif SYSTEM == BSD
+		#define HDR "bsd.h"
+	#endif
+	#include HDR
+	
+#ifdef and #ifndef are used to test if a name is defined.
