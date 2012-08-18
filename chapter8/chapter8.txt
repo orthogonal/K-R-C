@@ -1,0 +1,95 @@
+8.1:  File Descriptors
+----------------------
+System calls are functions within the operating system that may be called by user programs.
+
+All input/output is done by reading or writing files.
+All peripheral devices, even the keyboard and the screen, are files.
+
+Before you read or write a file, you have to open it - inform the system of your intent to do so.
+The system checks your right to do so and, if all is well, returns a file descriptor to the program.
+A file descriptor is a small, non-negative integer that can be used instead of the name to identify the file.
+
+
+0:  standard input
+1:  standard output
+2:  standard error
+
+If you redirect I/O using > and <, then the shell changes 0 and 1 to the named files.
+File descriptor 2 remains attached to the screen so that error messages can go there.
+
+
+8.2:  Low Level I/O - Read and Write
+------------------------------------
+In UNIX, the read and write calls are used for input and output.
+You access these in C with functions of the same name.
+	read(fd, buf, n)
+The first argument is a file descriptor.
+The second argument is the char array the data will go/come to/from.
+The third argument is the number of bytes to be transferred.
+The return value for read is the number of bytes transferred.  0 means EOF, -1 means an error.
+The return value for write is the number written.  If it's not what you wanted, something went wrong.
+You can actually use numbers for fd.  So 0 would be standard input.
+
+
+8.3:  Open, Creat, Close, Unlink
+--------------------------------
+It's actually spelled 'creat'.
+If you're not doing default, standard input, output, or error, then you must explicitly open files to read/write them.
+
+open returns a file descriptor instead of a file pointer.  
+	open (name, flags, perms)
+The name argument is a character string with the file name.
+flags is an int that specifies how the file is to be opened.  Possible constant values are:
+O_RDONLY	open for reading only
+O_WRONLY	open for writing only
+O_RDWR		open for both reading and writing
+These constants are defined in <fcntl.h> on UNIX.
+The perms argument is always zero as far as we're concerned.
+
+You can't open a file that does not exist.
+To create new files or re-write old ones, use creat:
+	creat(name, perms)
+This returns a file descriptor for the file, or -1 if it couldn't create it.
+If the file already exists, creat deletes everything in it.
+The perms argument specifies permissions - use a three digit octal number such as 0755.
+
+There is a limit (often 20) on the number of files a program may have open simultaneously.
+close(fd) closes the connection between the file descriptor and an open file.
+unlink(name) removes the file name from the file system.
+
+
+8.4:  Random Access - Lseek
+---------------------------
+read or write are sequential - they take place at the position in the file right after the previous one.
+	lseek(fd, offset, origin)
+This sets the current position in the file whose file descriptor is fd to (origin location + offset).
+origin is 0 for the beginning, 1 for the current position, or 2 for the end.
+offset must be a long - you have to put L after the number even if it's something like 0.  It must be 0L.
+The return value of lseek gives the new position in the file, or -1 if an error occurs.
+There is also 
+	fseek(file, offset, origin)
+which is the same thing except that it has a file pointer instead of a file descriptor, and it returns 0 normally and non-zero for error.
+
+
+8.7:  Example - A Storage Allocator
+-----------------------------------
+Calls to malloc and free may occur in any order - malloc calls on the operating system to obtain more memory as necessary.
+The space that malloc manages may not be contiguous, so its free storage is kept as a list of free blocks.
+Each block has a size, a pointer to the next block, and the space itself.
+When a request is made, the free list is scanned until a big-enough block is found.
+If a block is too big, it is split, and the proper amount is returned to the user while what is left remains on the free list.
+Freeing also searches the free list to find a proper place to insert the block being freed.
+Both lists are maintained in order of increasing address.
+
+On each machine there is a most restrictive type.
+If the most restrictive type can be stored at an address, all other types may also be stored there.
+
+The control information at the beginning of a block is called the header.
+All blocks are multiples of the header size, to simplify alignment.
+A union contains the desired header structure and an instance of the most restrictive alignment type.
+
+In malloc, the requested size in characters is rounded up to the proper number of header-sized units, and then one more is added for the header.
+The pointer returned by malloc points at the free space, not to the header itself.
+
+morecore(n) obtains storage from the operating system.
+The unix system call sbrk(n) returns a pointer to n more bytes of storage or -1 if there was no space.
