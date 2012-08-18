@@ -1,0 +1,202 @@
+6.1:  Basics of Structures
+--------------------------
+A structure is a collection of one or more variables, possibly of different types, stored under a single name for convenient handling.
+
+To define a structure, it's a separate thing, on the same level as functions and inclusion statements.
+	struct point{
+		int x;
+		int y;
+	}
+The struct keyword introduces the structure declaration.
+The name for the structure, called the structure tag, is optional, and names the kind of structure.
+The variables inside the structure are called "members".  
+
+A struct declaration defines a type.  i.e.
+	struct point{int x; int y;} a, b, c
+defines a, b, and c as objects of type "struct point".  They will each have members x and y that are integers.
+Space is set aside for them.
+Later on, you can do
+	struct point d
+And then d would be a struct point object, like the other three.
+
+A structure is initialized with a list of initializers, i.e.
+	struct point d = {300, 100}
+	
+A member of a structure is referred to with dot notation, i.e.
+	d.x
+
+Structures can contain other structures, i.e.
+	struct rect{
+		struct point pt1;
+		struct point pt2;
+	}
+And then you could do
+	r.pt1.x
+If r was a struct rect object.
+
+
+6.2:  Structures and Functions
+------------------------------
+The only legal operations on a structure are:
+	-copying it
+	-assigning it to a unit
+	-taking its address with &
+	-accessing its members.
+Structures themselves may not be compared.
+
+A function can return a structure, i.e.
+	struct point makepoint()
+	{
+		struct point n
+		n.x = 5;
+		return n;
+	}
+
+Structure can also be passed to functiosn:
+	int sum(struct point p1, struct point p2)
+	
+You can have pointers to structure.
+	struct point *pp
+Is just the same as int *pp.  It says that pp points to a struct point object.
+If you're passing a large structure to a function, it's generally more efficient to pass a pointer.
+To refer to members, you must use parentheses:  (*pp).x
+
+If p is a pointer to a structure, then 
+	p->x
+refers to the member x.  This is shorthand for (*p).x
+
+You can do anonymous structures:
+	struct{
+		int x;
+	} *p
+p points to a structure which has one member, integer x.  The structure isn't of a specific type, it's just the structure p points to.
+
+
+6.3:  Arrays of Structures
+--------------------------
+The syntax to declare an array of structures is:
+	struct key{
+		char *word;
+		int count;
+	} keytab[100];
+This declares the structure type, defines an array of this type, and sets aside storage for it.
+
+To initialize an array of structs:
+struct key keytab[] = {
+	{"red", 0},
+	{"blue", 100}
+}
+
+Since the size of an array is determined at compile time, you can determine the number of entires with:
+	sizeof keytab / sizeof(struct key)
+struct key is a type, and sizeof gives its size.  So the size of the array would be the size of a type times the number of those types, and therefore this will give the number of those types.
+By the way, remember that what's stored in struct key is just a pointer, which will always have the same size, not the string, which could be of arbitrary length.
+
+isalpha(c) and isalnum(c) identify letters and letters/digits.  They are both in ctype.
+
+
+6.4:  Pointers to Structures
+----------------------------
+You can do a function that returns a pointer to a structure:
+	struct key *binsearch(...)
+Then inside the function:
+	struct key *mid = &tab[0];
+	return mid;
+where tab[0] is an index in an array of structures.  So &tab[0] is the address of a structure.
+
+Pointer arithmetic that involves the first element beyond the end of an array will work correctly.  This is guaranteed in the language definition.
+
+
+6.5:  Self-referential structures
+---------------------------------
+This is how you make a binary tree:
+	struct tnode{
+		char *word;
+		int count;
+		struct tnode *left;
+		struct tnode *right;
+	}
+You set the pointers to NULL if they don't point to anything.  That's how you specify leaf nodes.
+
+An alignment restriction is a specification on the machine that certain data types must be at certain address values.
+For instance, the machine might specify that all integers be at even addresses.
+The library function malloc guarantees all alignment restrictions.
+malloc returns a pointer to void.  You need to cast the pointer into the desired type.
+malloc is in <stdlib.h>.
+	(struct tnode *) malloc(sizeof(struct tnode));
+This allocates a proper amount of storage space for the struct, and then returns a void pointer to that storage space.  The void pointer is cast to be of the type of a pointer to a struct tnode.
+malloc returns NULL if no space is available.
+
+If you create storage space, then you have to free it.  This is discussed later.
+
+
+6.7:  Typedef
+-------------
+typedef is a C facility for creating new data type names.
+That is, you use it to create synonyms.  i.e.
+	typedef int Length;
+Now Length is a synonym for int.  So you can write
+	Length max = 5;
+
+A common one would be
+	typedef char *String
+So instead of char *, you can now write String everywhere.
+
+You can use typedef on structs.
+	typedef struct tnode{ ... } Treenode;
+
+typedef does not create a new type - it merely adds a new name for some existing type.
+
+There are two main reasons, besides aesthetic issues, to use typedefs:
+	-If data types are machine-dependent, then when you move the program you only have to change the typedef.
+	-Provide better documentation for a program.
+	
+
+6.8:  Unions
+------------
+A union is a variable that may hold, at different times, objects of different types and sizes.
+The compiler keeps track of size and alignment requirements.
+They let you manipulate different kinds of data in a single area of storage.
+
+The syntax for declaring a union is:
+	union ifc{
+		int n;
+		float price;
+		char *name;
+	} abc;
+abc is a variable that would be able to hold an int, a float, or a char *.  
+The variable would be defined as big enough to hold the largest of those three types.
+You can assign any one of these types to abc at any time and use it.
+If something is stored as one type and then extracted as another, the result is dependent on the machine.  Don't do it.
+
+Access members with the syntax
+	abc.n
+or, if p is a pointer to a union,
+	p->n
+	
+Unions can be in structures or arrays:
+	tnode.abc.n
+	
+The same operations that are valid on structures are valid on a union.
+
+Basically, a union is a structure in which all members have offset zero.  It is big enough to hold the widest member, and the alignment is appropriate for all types in it.
+
+A union may only be initialized with a value of the type of its first member.  So you could only initialize abc with an integer value, not a float or char * value.
+
+
+6.9:  Bit-fields
+----------------
+A bit-field (a.k.a. "field") is a set of adjacent bits within a single storage unit called a "word".  
+The syntax to define it is:
+	struct{
+		unsigned int is_keyword	:	1;
+		unsigned int is_extern	:	1;
+		unsigned int is_static	:	1;
+	} flags;
+Now flags is a variable that contains three 1-bit fields.  
+The fields behave like small integers, basically.
+You access them with flags.is_keyword, etc.
+Fields may be declared only as ints, and you should specify signed or unsigned explicitly, for portability.
+They do not have addresses, and are not arrays, so you can't use & on them.
+Left-to-right vs. right-to-left is machine dependent.
+
