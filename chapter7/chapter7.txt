@@ -1,0 +1,204 @@
+7.1:  Standard Input and Output
+-------------------------------
+A text stream is a sequence of lines, with each line ending in \n.
+
+getchar() reads one character at a time each time it is called, or EOF at the end of a file.
+
+purchar(c) puts the character c on the standard output.  The function returns the character, or EOF if an error occurs.
+
+A file may be substituted for the keyboard using <
+For example,
+	prog <file1
+makes file1 the input for program prog.
+There is also >
+	prog >outfile
+Which writes the standard output of prog to outfile instead.
+
+Also, the command line has the pipe character |
+	prog1 | prog2
+this makes the standard output of prog1 the standard input for prog2.
+
+"functions" like getchar, putchar, and tolower are often macros to avoid the overhead of a function call per character.
+
+
+7.2:  Formatted Output - Printf
+-------------------------------
+printf converts, formats, and prints its arguments on standard output.
+Its return value is the number of characters printed.
+Ordinary characters in the format string are copied directly, but conversion specifications convert and print the next argument.
+Conversion specifications are anything starting with % and ending with a letter.
+
+Between % and the letter, there may be, in order:
+-A minus sign to specify left adjustment
+-A number to specify minimum field width, padded on the left (or right if there's a minus sign)
+-A period to separate field width from precision
+-A number that specifies the maximum number of characters in a string or digits after the decimal point of a float or digits in an integer
+-An h for a short or an l for a long.
+
+The conversion characters are:
+d, i	decimal number
+o		unsigned octal number without a leading zero
+x, X	unsigned hexidecimal number without a leading 0x
+u		unsigned decimal number
+c		single character
+s		char *, printing the string
+f		double, default six digit precision
+e, E	double in scientific notation
+g, G	double that doesn't print trailing zeroes and trailing decimal point
+p		void *
+%		just print a % sign
+
+You shouldn't make sure your arguments are sufficient and of the right type.
+
+There is also sprintf(string, format string, args) which puts the outputs in string instead of standard output.
+
+
+7.3:  Variable-length Argument Lists
+------------------------------------
+If you wanted to make your own printf, the declaration would be:
+	int printf(char *fmt, ...)
+The ... is actually there.  
+
+<stdarg.h> contains macro definitions to define how to step through an argument list.
+	va_list ap;
+va_list declares a variable that will refer to each argument in turn.
+	va_start(ap, fmt)
+The second argument must be the last named variable (there must be at least one named variable).  ap will point to the next variable after that.
+	n = va_arg(ap, int)
+Each call of va_arg returns one argument and steps the variable to the next one.
+It uses a type name to determine what type to return and how big a step to take.
+	va_end(ap)
+This must be called once you're done.
+
+
+7.4:  Formatted Input - Scanf
+-----------------------------
+scanf reads results from standard input, interprets them according to specifications similar to printf, and stores them in the arguments.
+	scanf("%d/%d/%d", &month, &day, &year)
+it skips over white space to look for input values.  
+The arguments must be pointers.  Don't write n, write &n.  You don't have to do this with arrays (i.e. for strings)
+It keeps going until either it exhausts it format string or some input fails to match the specification.
+Its return value is the number of successfully matched items.
+At the end of a file, EOF is returned.
+
+sscanf(string, "%d/%d/%d", %month, %day, %year) reads from the input string instead of standard input.
+
+The format string may contain:
+-Blanks or tabs, which are ignored.
+-Ordinary characters (not %), which must match the input stream.
+-Conversion specifications just like in printf.
+
+
+7.5:  File Access
+-----------------
+The unix program cat concatenates a set of named files onto the standard output.
+It is used to print files to the screen and as a general-purpose input collector for programs that can not access files by name.
+	cat x.c y.c
+prints the contents of those two files on the standard output.
+
+Before it can be read or written, a file must be opened by the library function fopen.
+This returns a pointer to be used in subsequent writes or reads of the file.
+This file pointer points to a structure with information about the file.  The declaration is:
+	FILE *fp
+FILE being a type name defined with a typedef.
+	fp = fopen(name, mode)
+mode is a character string, which indicates how you will use the file.
+It can be "r" (read), "w" (write), and "a" (append).
+Opening for appending keeps the old contents, while opening for writing deletes them.
+For a binary string, you must put "b" at the end, i.e. "rb".
+
+If a file doesn't exist but you try to open it with w or a, then it is created if possible.
+Trying to read a file that doesn't exist is an error, and fopen will return NULL.
+
+getc(fp) returns the next character from fp's stream or EOF if there's an error or the end of the file.
+
+putc(c, fp) rwites the character c to the file fp.
+
+stdin points to the standard input.
+stdout points to the standard output.
+stderr points to the standard error.
+
+fscanf and fprintf are like scanf and printf, except they also take a pointer to a file as the first argument.
+
+fclose(fp) breaks the connection between the file pointer and the file.  It is a good idea to free file pointers when no longer needed.
+This also flushes the buffer in which putc is collecting output.
+When a program terminates normally, fclose is called automatically.
+
+You can close stdin and stdout if they are not needed.
+
+
+7.6:  Error Handling - stderr and exit
+--------------------------------------
+Output written on stderr normally appears on the screen even if the standard output is redirected.
+
+exit(0) terminates program execution when it is called.
+The argument of exit is available to whatever program called this one.
+This is equivalent to return 0 in main, except it can be called from other functions.
+
+Use ferror(fp) to test fp and see if an error occurred.
+feof(fp) tests fp and sees if the eof has been reached.
+They both return nonzero if something bad did happen.
+
+
+7.7:  Line Input and Output
+---------------------------
+fgets(line, max, fp)
+This reads the next input line from fp and stores it in the char array line.
+At most max-1 characters will be read.
+The resulting line is terminated with '\0'.
+This function returns line, or NULL if there was an error or EOF.
+
+fputs(line, fp) writes the string line to the file fp.
+It returns EOF if an error occurs and 0 otherwise.
+
+gets and puts are similar to fgets and fputs, but they operate on stdin and stdout.
+gets deletes the \n at the end, and puts adds it at the end.
+
+
+7.8:  Miscellaneous Functions
+-----------------------------
+In <string.h>
+strcat(s, t)		concatenate t to the end of s
+strncat(s, t, n)	concatenate n characters from t to the end of s
+strcmp(s, t)		return negative if s < t, zero if s == t, and positive if s > t
+strncmp(s, t, n)	same as strcmp, but only int he first n characters
+strcpy(s, t)		copy t to s
+strncpy(s, t, n)	copy at most n characters of t to s
+strlen(s)			return length of s
+strchr(s, c) 		return pointer to first c in s, or NULL if not present.
+strrchr(s, c) 		return pointer to last c in s, or NULL if not present.
+
+In <ctype.h>
+isalpha(c) 			0 if c is non-alphabetic
+isupper(c) 			0 if c is not upper-case
+islower(c) 			0 if c is not lower-case
+isdigit(c) 			0 if c is not a digit
+isalnum(c) 			0 if c is neither alpha nor digit
+isspace(c) 			0 if c is not a blank, tab, newline, return, formfeed, or vertical tab
+toupper(c) 			returns c converted to uppercase
+tolower(c) 			returns c converted to lowercase
+
+ungetc(c, fp)		pushes character c back onto file fp, and returns c or EOF for an error.  Only one character is guaranteed per file.
+system(string)		execute the command contained in a character string, and then resume execution of the current program.
+	for instance, system("date"); runs the program date and prints the date/time on the standard output.
+
+void * malloc(n)		returns a pointer to n bytes of uninitialized storage, or NULL if the request can not be satisfied.
+void * calloc(n, size)	returns a pointer to enough space for an array of n objects of the specified size, or NULL if it can't.
+	The pointer returned from these two has the proper alignment, but must be cast into the appropriate type, i.e. (int *)malloc(n)
+	
+free(p)				free the space pointed to by pointer p that was originally obtained from a malloc or calloc.
+	There are no restrictions on the order in which space is freed, but do NOT free something that was not obtained from malloc or calloc.
+	
+In <math.h>:  Each of these takes doubles as arguments and returns a double.
+sin(x)
+cos(x)
+atan2(y, x)		arctan of y/x in radians
+exp(x)			e^x
+log(x)			ln(x)
+log10(x)
+pow(x, y)		x^y
+sqrt(x)
+fabs(x)			|x|
+
+rand() computes a sequence of pseudo-random integers from 0 to a number defined in <stdlib.h>.
+srand(unsigned) sets the seed for rand.
